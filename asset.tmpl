@@ -1,4 +1,3 @@
-<p>{{.Desc}}</p>
 <div>
 {{- range .Downloadables}}
 <a href="{{.}}" class="btn btn-primary">下載 {{.Ext}}</a>
@@ -9,3 +8,4 @@
   <a href="{{.Path}}"><img class="lazy" data-original="{{.Path}}" width="{{.Width}}" height="{{.Height}}"></img></a>
 </div>
 {{- end}}
+<p>{{.Desc}}</p>

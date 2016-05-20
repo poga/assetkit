@@ -70,7 +70,7 @@ li {
 body {
    font-family: "Helvetica Neue","HelveticaNeue-Light", "Helvetica Neue Light", Helvetica, Arial, "Lucida Grande", sans-serif;
    font-weight: 300;
-  color: #595858;
+   color: #595858;
 }
 
 #content {
@@ -81,6 +81,12 @@ body {
   padding-top: 73px;
   padding-right: 74px;
   padding-bottom: 74px;
+}
+
+#content p {
+  margin-top: 20px;
+  font-family: PingFangSC-Regular, sans-serif;
+  font-size: 16px;
 }
 
 .image {
