@@ -20,7 +20,7 @@ type Category struct {
 }
 
 func (c Category) RenderMenu() template.HTML {
-	tmpl, err := template.ParseFiles("category.tmpl")
+	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category.tmpl"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func (c Category) RenderMenu() template.HTML {
 }
 
 func (c Category) RenderPage() template.HTML {
-	tmpl, err := template.ParseFiles("category_page.tmpl")
+	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category_page.tmpl"))
 	if err != nil {
 		log.Fatal(err)
 	}

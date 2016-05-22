@@ -84,7 +84,7 @@ func (p *Project) RenderContent() template.HTML {
 }
 
 func (p *Project) Render() template.HTML {
-	tmpl, err := template.ParseFiles("project.tmpl")
+	tmpl, err := template.ParseFiles(filepath.Join(themePath, "project.tmpl"))
 	if err != nil {
 		log.Fatal(err)
 	}

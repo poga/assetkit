@@ -48,7 +48,7 @@ func (a *Asset) Add(path string) {
 }
 
 func (a Asset) RenderPage() template.HTML {
-	tmpl, err := template.ParseFiles("asset.tmpl")
+	tmpl, err := template.ParseFiles(filepath.Join(themePath, "asset.tmpl"))
 	if err != nil {
 		log.Fatal(err)
 	}
