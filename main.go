@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/termie/go-shutil"
 	"github.com/yosssi/gohtml"
@@ -14,12 +15,13 @@ import (
 var themePath = "themes/summit"
 
 func main() {
-	project, err := NewProject(os.Args[1])
+	projectPath := strings.TrimSuffix(os.Args[1], "/")
+	project, err := NewProject(projectPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = shutil.CopyTree(os.Args[1], filepath.Join(os.Args[2], os.Args[1]), nil)
+	err = shutil.CopyTree(projectPath, filepath.Join(os.Args[2], projectPath), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

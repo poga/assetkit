@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"html/template"
 	"image"
 	"io/ioutil"
@@ -23,28 +24,39 @@ type Asset struct {
 	Desc          string
 	Downloadables []DownloadablePath
 	Images        []Image
+	Project       *Project
 }
 
-func (a *Asset) Add(path string) {
+var ErrAssetNameIncorrect = errors.New("Assets with different name can not be grouped")
+
+func (a *Asset) Add(path string) error {
+	if AssetName(path) != a.Name {
+		return ErrAssetNameIncorrect
+	}
 	ext := filepath.Ext(path)
 
 	// Renderable images
 	if ext == ".png" || ext == ".jpg" {
-		a.Images = append(a.Images, NewImage(path))
-		return
+		img, err := NewImage(a.Project, path)
+		if err != nil {
+			return err
+		}
+		a.Images = append(a.Images, *img)
+		return nil
 	}
 
 	if ext == ".txt" {
 		content, err := ioutil.ReadFile(path)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		a.Desc = string(content)
-		return
+		return nil
 	}
 
 	// other files
 	a.Downloadables = append(a.Downloadables, DownloadablePath(path))
+	return nil
 }
 
 func (a Asset) RenderPage() template.HTML {
@@ -61,8 +73,9 @@ func (a Asset) RenderPage() template.HTML {
 	return template.HTML(buf.String())
 }
 
-func NewAsset(path string) *Asset {
+func NewAsset(project *Project, path string) *Asset {
 	return &Asset{
+		Project:       project,
 		Images:        make([]Image, 0),
 		Downloadables: make([]DownloadablePath, 0),
 		Name:          AssetName(path),
@@ -80,21 +93,23 @@ func AssetName(path string) string {
 }
 
 type Image struct {
-	Path   string
-	Width  int
-	Height int
+	Path    string
+	Width   int
+	Height  int
+	Project *Project
 }
 
-func NewImage(path string) Image {
+func NewImage(project *Project, path string) (*Image, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	image, _, err := image.DecodeConfig(file)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return Image{Path: path, Width: image.Width, Height: image.Height}
+
+	return &Image{Path: path, Width: image.Width, Height: image.Height}, nil
 }
 
 func (i Image) Name() string {

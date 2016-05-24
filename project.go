@@ -15,7 +15,7 @@ import (
 
 type Project struct {
 	Path       string
-	categories []Category
+	categories []*Category
 }
 
 func (p *Project) LogoPath() string {
@@ -24,6 +24,15 @@ func (p *Project) LogoPath() string {
 
 func (p *Project) LicensePath() string {
 	return filepath.Join(p.Path, "license.md")
+}
+
+func (p *Project) GetRelPath(path string) string {
+	relPath, err := filepath.Rel(p.Path, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return relPath
 }
 
 func (p *Project) Name() string {
@@ -43,8 +52,12 @@ func (p *Project) License() (template.HTML, error) {
 }
 
 func NewProject(path string) (*Project, error) {
-	path = strings.TrimRight(path, string(os.PathSeparator))
-	var categories []Category
+	path, err := filepath.Abs(strings.TrimRight(path, string(os.PathSeparator)))
+	if err != nil {
+		return nil, err
+	}
+	project := &Project{Path: path}
+	var categories []*Category
 	filesInDirectories, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -53,13 +66,17 @@ func NewProject(path string) (*Project, error) {
 		if !f.IsDir() {
 			continue
 		}
-		category := NewCategory(filepath.Join(path, f.Name()), nil)
+		category, err := NewCategory(project, filepath.Join(path, f.Name()), nil)
+		if err != nil {
+			return nil, err
+		}
 		//spew.Dump(category)
 
 		categories = append(categories, category)
 	}
 
-	return &Project{Path: path, categories: categories}, nil
+	project.categories = categories
+	return project, nil
 }
 
 func (p *Project) RenderMenu() template.HTML {
@@ -75,7 +92,7 @@ func (p *Project) RenderMenu() template.HTML {
 func (p *Project) RenderContent() template.HTML {
 	result := ""
 	for _, x := range p.categories {
-		Traverse(x, func(c Category) {
+		Traverse(x, func(c *Category) {
 			result += string(c.RenderPage())
 		})
 	}

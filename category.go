@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -14,10 +15,13 @@ import (
 type Category struct {
 	Path     string
 	Desc     string
-	Children []Category
+	Children []*Category
 	Assets   []*Asset
 	Parent   *Category
+	Project  *Project
 }
+
+var ErrRelCategoryPath = errors.New("Category path can't be relative")
 
 func (c Category) RenderMenu() template.HTML {
 	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category.tmpl"))
@@ -54,26 +58,35 @@ func (c Category) Name() string {
 
 func (c Category) PageName() string {
 	if c.Parent == nil {
-		return ""
+		return c.Name()
 	}
-	return c.Parent.Name() + " - " + c.Name()
+	return c.Parent.PageName() + " - " + c.Name()
 }
 
 func (c Category) PageID() string {
 	return strings.ToLower(strings.Replace(c.PageName(), " ", "_", -1))
 }
 
-func NewCategory(path string, parentCategory *Category) Category {
+func NewCategory(project *Project, path string, parentCategory *Category) (*Category, error) {
+	if !filepath.IsAbs(path) {
+		return nil, ErrRelCategoryPath
+	}
+
 	path = strings.TrimSuffix(path, string(os.PathSeparator))
+	relPath, err := filepath.Rel(project.Path, path)
+	if err != nil {
+		return nil, err
+	}
 	category := Category{
-		Path:     path,
-		Children: make([]Category, 0),
+		Path:     relPath,
+		Children: make([]*Category, 0),
 		Assets:   make([]*Asset, 0),
 		Parent:   parentCategory,
+		Project:  project,
 	}
 	fileInCategory, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// grouping asset by asset's filename
@@ -83,7 +96,11 @@ func NewCategory(path string, parentCategory *Category) Category {
 		absPath := filepath.Join(path, f.Name())
 		if f.IsDir() {
 			// recursive category creation
-			category.Children = append(category.Children, NewCategory(absPath, &category))
+			c, err := NewCategory(project, absPath, &category)
+			if err != nil {
+				return nil, err
+			}
+			category.Children = append(category.Children, c)
 		} else {
 			// Ignore Hidden file
 			if strings.HasPrefix(f.Name(), ".") {
@@ -91,10 +108,13 @@ func NewCategory(path string, parentCategory *Category) Category {
 			}
 			name := AssetName(absPath)
 			if _, exists := assetGroup[name]; !exists {
-				assetGroup[name] = NewAsset(absPath)
+				assetGroup[name] = NewAsset(project, absPath)
 			}
 
-			assetGroup[name].Add(absPath)
+			err := assetGroup[name].Add(absPath)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -102,11 +122,11 @@ func NewCategory(path string, parentCategory *Category) Category {
 		category.Assets = append(category.Assets, asset)
 	}
 
-	return category
+	return &category, nil
 }
 
-// BFS
-func Traverse(c Category, f func(Category)) {
+// DFS
+func Traverse(c *Category, f func(*Category)) {
 	f(c)
 
 	for _, child := range c.Children {
