@@ -15,7 +15,7 @@ import (
 var themePath = "themes/summit"
 
 func main() {
-	projectPath := strings.TrimSuffix(os.Args[1], "/")
+	projectPath := strings.TrimSuffix(os.Args[1], string(os.PathSeparator))
 	project, err := NewProject(projectPath)
 	if err != nil {
 		log.Fatal(err)
