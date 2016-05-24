@@ -1,0 +1,8 @@
+{{- if .Parent}}{{- else}}<ul>{{- end}}
+  <li>{{- if .Assets }}<a href="#{{.PageID}}" class="page-link" id="link-page-{{.PageID}}" data-page="page-{{.PageID}}">{{- end}}{{.Name}}{{- if .Assets }}</a>{{- end}}</li>
+{{- if .Children}}
+<ul>
+{{- range .Children}}{{.RenderMenu}}{{- end}}
+</ul>
+{{- end }}
+{{if .Parent}}{{else}}</ul>{{- end}}
