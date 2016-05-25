@@ -73,7 +73,7 @@ function loadMenu(cb) {
         if (data["projects"] != undefined) {
             data["projects"].forEach((p) => {
                 menu.append(new MenuItem({label: p, submenu: [
-                    {label: "Build & Publish"},
+                    //{label: "Build & Publish"},
                     {label: "Build", click() { buildProject(p) }}
                 ]}))
             })
