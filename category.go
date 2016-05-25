@@ -21,7 +21,7 @@ type Category struct {
 	Project  *Project
 }
 
-var ErrRelCategoryPath = errors.New("Category path can't be relative")
+var ErrRelPath = errors.New("Path can't be relative")
 
 func (c Category) RenderMenu() template.HTML {
 	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category.tmpl"))
@@ -69,16 +69,12 @@ func (c Category) PageID() string {
 
 func NewCategory(project *Project, path string, parentCategory *Category) (*Category, error) {
 	if !filepath.IsAbs(path) {
-		return nil, ErrRelCategoryPath
+		return nil, ErrRelPath
 	}
 
 	path = strings.TrimSuffix(path, string(os.PathSeparator))
-	relPath, err := filepath.Rel(project.Path, path)
-	if err != nil {
-		return nil, err
-	}
 	category := Category{
-		Path:     relPath,
+		Path:     path,
 		Children: make([]*Category, 0),
 		Assets:   make([]*Asset, 0),
 		Parent:   parentCategory,

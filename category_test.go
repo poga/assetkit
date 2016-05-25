@@ -15,7 +15,7 @@ func TestCategory(t *testing.T) {
 
 		Convey("It should return error", func() {
 			c, err := NewCategory(proj, categoryPath, nil)
-			So(err, ShouldEqual, ErrRelCategoryPath)
+			So(err, ShouldEqual, ErrRelPath)
 			So(c, ShouldBeNil)
 		})
 	})
@@ -27,7 +27,7 @@ func TestCategory(t *testing.T) {
 		So(c, ShouldNotBeNil)
 
 		Convey("It should automatically convert it into relative path", func() {
-			So(c.Path, ShouldEqual, "CategoryBar")
+			So(c.Path, ShouldEqual, abs("testdata/testproject/CategoryBar"))
 		})
 
 		Convey("It should ignore trailing slash", func() {

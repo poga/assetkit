@@ -10,10 +10,10 @@ func TestAsset(t *testing.T) {
 	Convey("An asset is a group of files with related filename", t, func() {
 		projectPath := "testdata/testproject"
 		project, _ := NewProject(projectPath)
-		assetTXTPath := "testdata/testproject/CategoryBar/CategoryBarC1/asset.txt"
-		assetPNGPath := "testdata/testproject/CategoryBar/CategoryBarC1/asset.png"
-		assetPNGPath2 := "testdata/testproject/CategoryBar/CategoryBarC1/asset-2.png"
-		assetDATPath := "testdata/testproject/CategoryBar/CategoryBarC1/asset.dat"
+		assetTXTPath := abs("testdata/testproject/CategoryBar/CategoryBarC1/asset.txt")
+		assetPNGPath := abs("testdata/testproject/CategoryBar/CategoryBarC1/asset.png")
+		assetPNGPath2 := abs("testdata/testproject/CategoryBar/CategoryBarC1/asset-2.png")
+		assetDATPath := abs("testdata/testproject/CategoryBar/CategoryBarC1/asset.dat")
 
 		Convey("files with related filename will be grouped into one asset", func() {
 			assetTXT := NewAsset(project, assetTXTPath)
@@ -26,7 +26,7 @@ func TestAsset(t *testing.T) {
 			So(assetDAT.Name, ShouldEqual, "asset")
 
 			Convey("Assets with different name can not be grouped", func() {
-				err := assetTXT.Add("testdata/testproject/CategoryBar/CategoryBarC1/other asset.png")
+				err := assetTXT.Add(abs("testdata/testproject/CategoryBar/CategoryBarC1/other asset.png"))
 				So(err, ShouldEqual, ErrAssetNameIncorrect)
 			})
 
@@ -56,7 +56,7 @@ func TestAsset(t *testing.T) {
 
 					So(len(assetTXT.Downloadables), ShouldEqual, 1)
 					So(len(assetTXT.Images), ShouldEqual, 0)
-					So(assetTXT.Downloadables[0], ShouldEqual, DownloadablePath(assetDATPath))
+					So(assetTXT.Downloadables[0].Path, ShouldEqual, assetDATPath)
 					So(assetTXT.Downloadables[0].Ext(), ShouldEqual, ".dat")
 					So(assetTXT.Downloadables[0].Name(), ShouldEqual, "asset")
 				})

@@ -30,6 +30,9 @@ type Asset struct {
 var ErrAssetNameIncorrect = errors.New("Assets with different name can not be grouped")
 
 func (a *Asset) Add(path string) error {
+	if !filepath.IsAbs(path) {
+		return ErrRelPath
+	}
 	if AssetName(path) != a.Name {
 		return ErrAssetNameIncorrect
 	}
@@ -55,7 +58,7 @@ func (a *Asset) Add(path string) error {
 	}
 
 	// other files
-	a.Downloadables = append(a.Downloadables, DownloadablePath(path))
+	a.Downloadables = append(a.Downloadables, DownloadablePath{Path: path, Project: a.Project})
 	return nil
 }
 
@@ -109,19 +112,30 @@ func NewImage(project *Project, path string) (*Image, error) {
 		return nil, err
 	}
 
-	return &Image{Path: path, Width: image.Width, Height: image.Height}, nil
+	return &Image{Project: project, Path: path, Width: image.Width, Height: image.Height}, nil
 }
 
 func (i Image) Name() string {
 	return AssetName(i.Path)
 }
 
-type DownloadablePath string
+func (i Image) DataPath() string {
+	return i.Project.DataPath(i.Path)
+}
+
+type DownloadablePath struct {
+	Path    string
+	Project *Project
+}
 
 func (dp DownloadablePath) Ext() string {
-	return filepath.Ext(string(dp))
+	return filepath.Ext(dp.Path)
 }
 
 func (dp DownloadablePath) Name() string {
-	return AssetName(string(dp))
+	return AssetName(dp.Path)
+}
+
+func (dp DownloadablePath) DataPath() string {
+	return dp.Project.DataPath(dp.Path)
 }

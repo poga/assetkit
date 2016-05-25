@@ -22,17 +22,21 @@ func (p *Project) LogoPath() string {
 	return filepath.Join(p.Path, "logo.png")
 }
 
+func (p *Project) LogoDataPath() string {
+	return p.DataPath(p.LogoPath())
+}
+
 func (p *Project) LicensePath() string {
 	return filepath.Join(p.Path, "license.md")
 }
 
-func (p *Project) GetRelPath(path string) string {
+func (p *Project) DataPath(path string) string {
 	relPath, err := filepath.Rel(p.Path, path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return relPath
+	return filepath.Join(filepath.Base(p.Path), relPath)
 }
 
 func (p *Project) Name() string {

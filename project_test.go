@@ -32,11 +32,11 @@ func TestProject(t *testing.T) {
 			So(proj.LogoPath(), ShouldEqual, abs("testdata/testproject/logo.png"))
 		})
 
-		Convey("Can return relative path", func() {
-			So(proj.GetRelPath(proj.Path), ShouldEqual, ".")
+		Convey("Can return data path relative to output file", func() {
+			So(proj.DataPath(proj.Path), ShouldEqual, "testproject")
 
-			So(proj.GetRelPath(proj.LicensePath()), ShouldEqual, "license.md")
-			So(proj.GetRelPath(proj.LogoPath()), ShouldEqual, "logo.png")
+			So(proj.DataPath(proj.LicensePath()), ShouldEqual, "testproject/license.md")
+			So(proj.DataPath(proj.LogoPath()), ShouldEqual, "testproject/logo.png")
 		})
 	})
 }
