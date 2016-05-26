@@ -5,11 +5,16 @@ const fs = require('fs')
 const rimraf = require('rimraf')
 const storage = require('electron-json-storage')
 
+const powerSaveBlocker = require('electron').powerSaveBlocker;
+powerSaveBlocker.start('prevent-app-suspension');
+
 let appIcon = null;
 let outPath = path.join(app.getPath('temp'), "assetkit")
 console.log(outPath)
 app.on('ready', () => {
-  tray = appIcon = new Tray('icon.png');
+    dialog.showMessageBox({message:app.getAppPath(), buttons: ["OK"]})
+
+  tray = appIcon = new Tray(path.join(app.getAppPath(), 'icon.png'));
   /*
   const contextMenu = Menu.buildFromTemplate([
       {label: "Build Project", click() { openProject() }},
@@ -21,7 +26,7 @@ app.on('ready', () => {
   //appIcon.setContextMenu(contextMenu);
   loadMenu()
 });
-app.dock.hide()
+//app.dock.hide()
 
 function openProject() {
     selectedPath = dialog.showOpenDialog({properties: ["openDirectory"]})
@@ -32,17 +37,17 @@ function openProject() {
     }
 }
 
-function buildProject(path) {
+function buildProject(project_path) {
     rimraf(outPath, () => {
-        child_process.execFile("./assetkit", [path, outPath], (err, stdout, stderr) => {
+        child_process.execFile(path.join(app.getAppPath(),"assetkit"), ["compile", project_path, outPath], (err, stdout, stderr) => {
             if (err) { throw err }
             console.log(stdout)
             console.log(stderr)
             loadMenu(() => {
-                dialog.showMessageBox({message: "編譯完成", buttons: ["OK"]})
-                shell.showItemInFolder(outPath + "/index.html")
+                //dialog.showMessageBox({message: "編譯完成", buttons: ["OK"]})
+                shell.openItem(outPath + "/index.html")
+                //shell.showItemInFolder(outPath + "/index.html")
             })
-            //shell.openItem(outPath + "/index.html")
         })
     })
 }

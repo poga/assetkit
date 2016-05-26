@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "./node_modules/.bin/electron index.js"
+    "start": "./node_modules/.bin/electron index.js",
+    "build": "./node_modules/.bin/electron-packager . SuiSui --platform=darwin --arch=x64 --overwrite"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "electron-packager": "^7.0.2",
     "electron-prebuilt": "^1.1.1"
   },
   "dependencies": {

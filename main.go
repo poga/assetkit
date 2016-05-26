@@ -5,12 +5,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/kardianos/osext"
 	"github.com/spf13/cobra"
 )
 
-var themePath = "themes/summit"
+var themePath string
+
+func init() {
+	path, _ := osext.ExecutableFolder()
+	themePath = filepath.Join(path, "themes/summit")
+}
 
 func main() {
 	if err := RootCmd.Execute(); err != nil {
@@ -66,7 +73,15 @@ var statusCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%v\n", st)
+		for _, path := range st.New {
+			fmt.Printf("New: %s\n", path)
+		}
+		for _, path := range st.Change {
+			fmt.Printf("Change: %s\n", path)
+		}
+		for _, path := range st.Remove {
+			fmt.Printf("Remove: %s\n", path)
+		}
 	},
 }
 
