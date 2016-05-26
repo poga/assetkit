@@ -121,21 +121,26 @@ func (p *Project) SaveMeta() error {
 	return encoder.Encode(p.Meta)
 }
 
-func (p *Project) LoadMeta() error {
+func (p *Project) LoadMeta() (*Meta, error) {
 	metaFilePath := filepath.Join(p.Path, ".suisui")
 	meta := Meta{}
 
 	if _, err := os.Stat(metaFilePath); err != nil {
-		return err
+		return nil, err
 	}
 
 	file, err := os.Open(metaFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	decoder := json.NewDecoder(file)
-	return decoder.Decode(&meta)
+	err = decoder.Decode(&meta)
+	if err != nil {
+		return nil, err
+	}
+
+	return &meta, nil
 }
 
 type Meta struct {
@@ -196,4 +201,40 @@ func (p *Project) CompileTo(outputPath string) error {
 	}
 
 	return ioutil.WriteFile(filepath.Join(outputPath, "index.html"), []byte(gohtml.Format(string(p.Render()))), 0644)
+}
+
+type Status struct {
+	New    []string
+	Remove []string
+	Change []string
+}
+
+func (p *Project) Status() (Status, error) {
+	status := Status{New: make([]string, 0), Remove: make([]string, 0), Change: make([]string, 0)}
+	savedMeta, err := p.LoadMeta()
+	if err != nil {
+		return Status{}, err
+	}
+	currentRevision := p.Revisions()
+
+	for path, hash := range savedMeta.Revisions {
+		currentHash, exists := currentRevision[path]
+		if !exists {
+			status.Remove = append(status.Remove, path)
+			continue
+		}
+
+		if currentHash != hash {
+			status.Change = append(status.Change, path)
+		}
+	}
+
+	for path, _ := range currentRevision {
+		_, exists := savedMeta.Revisions[path]
+		if !exists {
+			status.New = append(status.New, path)
+		}
+	}
+
+	return status, nil
 }

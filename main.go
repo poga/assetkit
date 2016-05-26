@@ -52,6 +52,24 @@ var compileCmd = &cobra.Command{
 	},
 }
 
+var statusCmd = &cobra.Command{
+	Use:   "status path",
+	Short: "Status of a project",
+	Run: func(cmd *cobra.Command, args []string) {
+		projectPath := strings.TrimSuffix(args[0], string(os.PathSeparator))
+		project, err := NewProject(projectPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		st, err := project.Status()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%v\n", st)
+	},
+}
+
 func init() {
-	RootCmd.AddCommand(versionCmd, compileCmd)
+	RootCmd.AddCommand(versionCmd, compileCmd, statusCmd)
 }
