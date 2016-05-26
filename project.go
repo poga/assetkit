@@ -3,19 +3,26 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
+	"encoding/json"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/russross/blackfriday"
+	"github.com/termie/go-shutil"
+	"github.com/yosssi/gohtml"
 )
 
 type Project struct {
 	Path       string
 	categories []*Category
+	Meta       Meta
 }
 
 func (p *Project) LogoPath() string {
@@ -83,6 +90,59 @@ func NewProject(path string) (*Project, error) {
 	return project, nil
 }
 
+func (p *Project) Revisions() map[string]string {
+	result := make(map[string]string)
+
+	filepath.Walk(p.Path, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() || strings.HasPrefix(filepath.Base(path), ".") {
+			return nil
+		}
+
+		h := sha1.New()
+		bytes, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		h.Write(bytes)
+		result[path] = hex.EncodeToString(h.Sum(nil))
+
+		return nil
+	})
+
+	return result
+}
+
+func (p *Project) SaveMeta() error {
+	file, err := os.Create(filepath.Join(p.Path, ".suisui"))
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(file)
+	return encoder.Encode(p.Meta)
+}
+
+func (p *Project) LoadMeta() error {
+	metaFilePath := filepath.Join(p.Path, ".suisui")
+	meta := Meta{}
+
+	if _, err := os.Stat(metaFilePath); err != nil {
+		return err
+	}
+
+	file, err := os.Open(metaFilePath)
+	if err != nil {
+		return err
+	}
+
+	decoder := json.NewDecoder(file)
+	return decoder.Decode(&meta)
+}
+
+type Meta struct {
+	Revisions      map[string]string
+	LastCompiledAt time.Time
+}
+
 func (p *Project) RenderMenu() template.HTML {
 	result := ""
 
@@ -116,4 +176,24 @@ func (p *Project) Render() template.HTML {
 	bufWriter.Flush()
 
 	return template.HTML(buf.String())
+}
+
+func (p *Project) CompileTo(outputPath string) error {
+	err := shutil.CopyTree(p.Path, filepath.Join(outputPath, filepath.Base(p.Path)), nil)
+	if err != nil {
+		return err
+	}
+	err = shutil.CopyTree(themePath, filepath.Join(outputPath, "themes"), nil)
+	if err != nil {
+		return err
+	}
+
+	p.Meta.Revisions = p.Revisions()
+	p.Meta.LastCompiledAt = time.Now()
+	err = p.SaveMeta()
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filepath.Join(outputPath, "index.html"), []byte(gohtml.Format(string(p.Render()))), 0644)
 }

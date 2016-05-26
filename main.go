@@ -2,32 +2,56 @@
 package main
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/termie/go-shutil"
-	"github.com/yosssi/gohtml"
+	"github.com/spf13/cobra"
 )
 
 var themePath = "themes/summit"
 
 func main() {
-	projectPath := strings.TrimSuffix(os.Args[1], string(os.PathSeparator))
-	project, err := NewProject(projectPath)
-	if err != nil {
-		log.Fatal(err)
+	if err := RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
 	}
+}
 
-	err = shutil.CopyTree(projectPath, filepath.Join(os.Args[2], projectPath), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = shutil.CopyTree(themePath, filepath.Join(os.Args[2], "themes"), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ioutil.WriteFile(filepath.Join(os.Args[2], "index.html"), []byte(gohtml.Format(string(project.Render()))), 0644)
+var RootCmd = &cobra.Command{
+	Use:   "suisui",
+	Short: "SuiSui manage your assets beautifully",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Do Stuff Here
+	},
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of SuiSui",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("0.0.1")
+	},
+}
+
+var compileCmd = &cobra.Command{
+	Use:   "compile path",
+	Short: "Compile a project into standalone website",
+	Run: func(cmd *cobra.Command, args []string) {
+		projectPath := strings.TrimSuffix(args[0], string(os.PathSeparator))
+		project, err := NewProject(projectPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = project.CompileTo(args[1])
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+func init() {
+	RootCmd.AddCommand(versionCmd, compileCmd)
 }
