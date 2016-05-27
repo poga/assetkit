@@ -12,8 +12,6 @@ let appIcon = null;
 let outPath = path.join(app.getPath('temp'), "assetkit")
 console.log(outPath)
 app.on('ready', () => {
-    dialog.showMessageBox({message:app.getAppPath(), buttons: ["OK"]})
-
   tray = appIcon = new Tray(path.join(app.getAppPath(), 'icon.png'));
   /*
   const contextMenu = Menu.buildFromTemplate([
