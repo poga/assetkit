@@ -52,14 +52,14 @@ func (p *Project) Name() string {
 
 }
 
-func (p *Project) License() (template.HTML, error) {
+func (p *Project) License() template.HTML {
 	renderer := blackfriday.HtmlRenderer(0, "", "")
 	md, err := ioutil.ReadFile(p.LicensePath())
 	if err != nil {
-		return "", err
+		return ""
 	}
 
-	return template.HTML(blackfriday.Markdown(md, renderer, blackfriday.EXTENSION_HARD_LINE_BREAK)), nil
+	return template.HTML(blackfriday.Markdown(md, renderer, blackfriday.EXTENSION_HARD_LINE_BREAK))
 }
 
 func NewProject(path string) (*Project, error) {
