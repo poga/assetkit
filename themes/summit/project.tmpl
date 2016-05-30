@@ -15,14 +15,18 @@
       <div id="menu">
         <img src="{{.LogoDataPath}}" id="logo"></img>
         <div id="menu_list">
-        {{.RenderMenu}}
+          {{range .Categories}}
+            {{.RenderMenu}}
+          {{end}}
         </div>
         <div id="license">
         {{.License}}
         </div>
       </div>
       <div id="content">
-        {{.RenderContent}}
+        {{range .Pages}}
+          {{.RenderPage}}
+        {{end}}
       </div>
     </div>
   </body>

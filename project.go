@@ -21,7 +21,7 @@ import (
 
 type Project struct {
 	Path       string
-	categories []*Category
+	Categories []*Category
 	Meta       Meta
 }
 
@@ -81,12 +81,11 @@ func NewProject(path string) (*Project, error) {
 		if err != nil {
 			return nil, err
 		}
-		//spew.Dump(category)
 
 		categories = append(categories, category)
 	}
 
-	project.categories = categories
+	project.Categories = categories
 	return project, nil
 }
 
@@ -148,25 +147,16 @@ type Meta struct {
 	LastCompiledAt time.Time
 }
 
-func (p *Project) RenderMenu() template.HTML {
-	result := ""
+func (p *Project) Pages() []*Category {
+	var result []*Category
 
-	for _, category := range p.categories {
-		result += string(category.RenderMenu())
-	}
-
-	return template.HTML(result)
-}
-
-func (p *Project) RenderContent() template.HTML {
-	result := ""
-	for _, x := range p.categories {
+	for _, x := range p.Categories {
 		Traverse(x, func(c *Category) {
-			result += string(c.RenderPage())
+			result = append(result, c)
 		})
 	}
 
-	return template.HTML(result)
+	return result
 }
 
 func (p *Project) Render() template.HTML {
@@ -177,7 +167,10 @@ func (p *Project) Render() template.HTML {
 
 	var buf bytes.Buffer
 	bufWriter := bufio.NewWriter(&buf)
-	tmpl.Execute(bufWriter, p)
+	err = tmpl.Execute(bufWriter, p)
+	if err != nil {
+		log.Fatal(err)
+	}
 	bufWriter.Flush()
 
 	return template.HTML(buf.String())
