@@ -47,12 +47,14 @@ var compileCmd = &cobra.Command{
 	Short: "Compile a project into standalone website",
 	Run: func(cmd *cobra.Command, args []string) {
 		projectPath := strings.TrimSuffix(args[0], string(os.PathSeparator))
+		outputPath := strings.TrimSuffix(args[1], string(os.PathSeparator))
 		project, err := NewProject(projectPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = project.CompileTo(args[1])
+		publisher := NewPublisher(project, themePath, true)
+		err = publisher.Publish(outputPath)
 		if err != nil {
 			log.Fatal(err)
 		}

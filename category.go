@@ -24,21 +24,7 @@ type Category struct {
 var ErrRelPath = errors.New("Path can't be relative")
 
 func (c Category) RenderMenu() template.HTML {
-	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category.tmpl"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var buf bytes.Buffer
-	bufWriter := bufio.NewWriter(&buf)
-	tmpl.Execute(bufWriter, c)
-	bufWriter.Flush()
-
-	return template.HTML(buf.String())
-}
-
-func (c Category) RenderPage() template.HTML {
-	tmpl, err := template.ParseFiles(filepath.Join(themePath, "category_page.tmpl"))
+	tmpl, err := template.ParseFiles("category_menu.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}

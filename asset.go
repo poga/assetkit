@@ -120,7 +120,7 @@ func (i Image) Name() string {
 }
 
 func (i Image) DataPath() string {
-	return i.Project.DataPath(i.Path)
+	return i.Project.Rel(i.Path)
 }
 
 type DownloadablePath struct {
@@ -137,5 +137,5 @@ func (dp DownloadablePath) Name() string {
 }
 
 func (dp DownloadablePath) DataPath() string {
-	return dp.Project.DataPath(dp.Path)
+	return dp.Project.Rel(dp.Path)
 }

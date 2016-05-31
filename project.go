@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -15,8 +13,6 @@ import (
 	"time"
 
 	"github.com/russross/blackfriday"
-	"github.com/termie/go-shutil"
-	"github.com/yosssi/gohtml"
 )
 
 type Project struct {
@@ -29,15 +25,11 @@ func (p *Project) LogoPath() string {
 	return filepath.Join(p.Path, "logo.png")
 }
 
-func (p *Project) LogoDataPath() string {
-	return p.DataPath(p.LogoPath())
-}
-
 func (p *Project) LicensePath() string {
 	return filepath.Join(p.Path, "license.md")
 }
 
-func (p *Project) DataPath(path string) string {
+func (p *Project) Rel(path string) string {
 	relPath, err := filepath.Rel(p.Path, path)
 	if err != nil {
 		log.Fatal(err)
@@ -52,7 +44,7 @@ func (p *Project) Name() string {
 
 }
 
-func (p *Project) License() template.HTML {
+func (p *Project) LicenseText() template.HTML {
 	renderer := blackfriday.HtmlRenderer(0, "", "")
 	md, err := ioutil.ReadFile(p.LicensePath())
 	if err != nil {
@@ -157,43 +149,6 @@ func (p *Project) Pages() []*Category {
 	}
 
 	return result
-}
-
-func (p *Project) Render() template.HTML {
-	tmpl, err := template.ParseFiles(filepath.Join(themePath, "project.tmpl"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var buf bytes.Buffer
-	bufWriter := bufio.NewWriter(&buf)
-	err = tmpl.Execute(bufWriter, p)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bufWriter.Flush()
-
-	return template.HTML(buf.String())
-}
-
-func (p *Project) CompileTo(outputPath string) error {
-	err := shutil.CopyTree(p.Path, filepath.Join(outputPath, filepath.Base(p.Path)), nil)
-	if err != nil {
-		return err
-	}
-	err = shutil.CopyTree(themePath, filepath.Join(outputPath, "themes"), nil)
-	if err != nil {
-		return err
-	}
-
-	p.Meta.Revisions = p.Revisions()
-	p.Meta.LastCompiledAt = time.Now()
-	err = p.SaveMeta()
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filepath.Join(outputPath, "index.html"), []byte(gohtml.Format(string(p.Render()))), 0644)
 }
 
 type Status struct {
