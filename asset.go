@@ -39,7 +39,7 @@ func (a *Asset) Add(path string) error {
 	ext := filepath.Ext(path)
 
 	// Renderable images
-	if ext == ".png" || ext == ".jpg" {
+	if ext == ".png" || ext == ".jpg" || ext == ".gif" {
 		img, err := NewImage(a.Project, path)
 		if err != nil {
 			return err
